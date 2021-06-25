@@ -4,25 +4,41 @@ const Campsite = require('./models/campsite');
 const url = 'mongodb://localhost:27017/nucampsite';
 const connect = mongoose.connect(url, {
     useCreateIndex: true,
+    useFindAndModify: false,
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
 
 connect.then(() => {
-    console.log('Connection to server established');
 
-    //const newCampsite = new Campsite({   This line is an alterate way to instantiate the model. The below method automatically saves it, so that has also been commented out below.
+    console.log('Connected correctly to server');
+
     Campsite.create({
-        name: 'React Lake Campground',
+        name: 'React Lake Campground 2.0',
         description: 'test'
     })
-    //newCampsite.save()
     .then(campsite => {
         console.log(campsite);
-        return Campsite.find();
+
+        return Campsite.findByIdAndUpdate(campsite._id, {
+            $set: { description: 'Updated Test Document' }
+        }, {
+            new: true
+        });
     })
-    .then(campsites => {
-        console.log(campsites);
+    .then(campsite => {
+        console.log(campsite);
+
+        campsite.comments.push({
+            rating: 5,
+            text: 'What a magnificent view!',
+            author: 'Tinus Lorvaldes'
+        });
+
+        return campsite.save();
+    })
+    .then(campsite => {
+        console.log(campsite);
         return Campsite.deleteMany();
     })
     .then(() => {
@@ -33,4 +49,3 @@ connect.then(() => {
         mongoose.connection.close();
     });
 });
-
